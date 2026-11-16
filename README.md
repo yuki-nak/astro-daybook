@@ -72,3 +72,7 @@ This is a public site and a public repository. Before you publish:
 - Weather coordinates are city-level, not your home.
 - Photos have gone through `tools/prep_image.py`.
 - Remember that `draft: true` entries and deleted entries remain readable in the Git history of a public repository.
+
+## License
+
+[MIT](LICENSE). The example entries are yours to replace; *Walden* is in the public domain.

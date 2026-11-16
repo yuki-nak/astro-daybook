@@ -1,5 +1,7 @@
 {
   "name": "astro-daybook",
+  "description": "A quiet static journal built with Astro: daily diary, notes on what you read and watch, a log of things you make, and automatic weather.",
+  "license": "MIT",
   "type": "module",
   "private": true,
   "scripts": {
