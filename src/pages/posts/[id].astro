@@ -1,0 +1,130 @@
+---
+import Base from '../../layouts/Base.astro';
+import Rendered from '../../components/Rendered.astro';
+import WeatherLine from '../../components/WeatherLine.astro';
+import { getSite, type DiaryItem, type NoteItem } from '../../lib/entries';
+import { formatDate, formatMonthDay } from '../../lib/format';
+
+export async function getStaticPaths() {
+  const site = await getSite();
+  const notes = site.timeline.filter((i): i is NoteItem => i.type === 'note');
+  return site.diary.map((post, i) => ({
+    params: { id: post.entry.id },
+    props: {
+      post,
+      older: site.diary[i + 1],
+      newer: site.diary[i - 1],
+      sameDay: notes.filter((n) => n.key === post.key),
+    },
+  }));
+}
+
+interface Props {
+  post: DiaryItem;
+  older?: DiaryItem;
+  newer?: DiaryItem;
+  sameDay: NoteItem[];
+}
+
+const { post, older, newer, sameDay } = Astro.props;
+const d = post.entry.data;
+---
+
+<Base title={d.title ?? formatDate(post.date)} description={post.excerpt}>
+  <article>
+    <header class="head">
+      <p class="date">{formatDate(post.date)}</p>
+      <WeatherLine weather={post.weather} />
+      {d.title && <h1>{d.title}</h1>}
+    </header>
+
+    <Rendered entry={post.entry} />
+
+    {
+      sameDay.length > 0 && (
+        <aside class="same-day">
+          <p class="label">Also on this day</p>
+          <ul>
+            {sameDay.map((n) => (
+              <li>
+                <a href={n.url}>{n.work.name}</a>
+                <span class="muted">{n.work.entry.data.kind}</span>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      )
+    }
+
+    {
+      d.tags.length > 0 && (
+        <p class="tags">
+          {d.tags.map((t) => (
+            <a href={`/tags/${t}/`}>#{t}</a>
+          ))}
+        </p>
+      )
+    }
+  </article>
+
+  <nav class="pager" aria-label="Older and newer entries">
+    <span>{older && <a href={older.url}>← {formatMonthDay(older.date)}</a>}</span>
+    <span>{newer && <a href={newer.url}>{formatMonthDay(newer.date)} →</a>}</span>
+  </nav>
+</Base>
+
+<style>
+  .head {
+    margin-bottom: 1.75rem;
+  }
+  .date {
+    margin: 0;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 1.15rem;
+    margin: 0.75rem 0 0;
+  }
+  .same-day {
+    margin-top: 2.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  .same-day .label {
+    margin: 0 0 0.25rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .same-day ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .same-day a {
+    text-decoration: underline;
+    text-decoration-color: var(--rule);
+    text-underline-offset: 0.25em;
+  }
+  .same-day .muted {
+    font-size: 0.8em;
+    margin-left: 0.5em;
+  }
+  .tags {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    gap: 1em;
+    flex-wrap: wrap;
+  }
+  .pager {
+    margin-top: 3rem;
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+</style>

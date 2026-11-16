@@ -1,0 +1,107 @@
+---
+import type { TimelineItem } from '../lib/entries';
+import { dateParts, formatMonthYear } from '../lib/format';
+
+interface Props {
+  items: TimelineItem[];
+}
+
+const groups = new Map<string, TimelineItem[]>();
+for (const item of Astro.props.items) {
+  const label = formatMonthYear(item.date);
+  if (!groups.has(label)) groups.set(label, []);
+  groups.get(label)!.push(item);
+}
+---
+
+{Astro.props.items.length === 0 && <p class="empty">Nothing here yet.</p>}
+
+{
+  [...groups].map(([label, items]) => (
+    <section class="month">
+      <h2>{label}</h2>
+      <ol>
+        {items.map((item) => {
+          const { day, weekday } = dateParts(item.date);
+          return (
+            <li>
+              <a href={item.url}>
+                <span class="day">
+                  {day}
+                  <span class="wd">{weekday}</span>
+                </span>
+                <span class="wx">{item.weather.word ?? ''}</span>
+                <span class="text">
+                  {item.type === 'note' ? (
+                    <>
+                      {item.work.name}<span class="kind">{item.work.entry.data.kind}</span>
+                    </>
+                  ) : (
+                    (item.entry.data.title ?? (item.excerpt || '(photo)'))
+                  )}
+                  {item.photo && <span class="photo" title="Has photos">◫</span>}
+                </span>
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  ))
+}
+
+<style>
+  .month {
+    margin-bottom: 2.25rem;
+  }
+  h2 {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--muted);
+    border-bottom: 1px solid var(--rule);
+    margin: 0 0 0.25rem;
+    padding-bottom: 0.2rem;
+  }
+  ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li a {
+    display: grid;
+    grid-template-columns: 3.75em 7.5em 1fr;
+    gap: 0.5em;
+    padding: 0.45rem 0;
+    align-items: baseline;
+  }
+  li a:hover .text {
+    color: var(--accent);
+  }
+  .day {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .wd {
+    font-size: 0.75em;
+    color: var(--muted);
+    margin-left: 0.25em;
+  }
+  .wx {
+    font-size: 0.75rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .kind,
+  .photo {
+    font-size: 0.75em;
+    color: var(--muted);
+    margin-left: 0.5em;
+  }
+</style>

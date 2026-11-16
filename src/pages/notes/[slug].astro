@@ -1,0 +1,20 @@
+---
+import Base from '../../layouts/Base.astro';
+import ShelfWork from '../../components/ShelfWork.astro';
+import { getSite, type Work } from '../../lib/entries';
+
+export async function getStaticPaths() {
+  const site = await getSite();
+  return site.shelves.notes.map((work) => ({ params: { slug: work.slug }, props: { work } }));
+}
+
+interface Props {
+  work: Work;
+}
+
+const { work } = Astro.props;
+---
+
+<Base title={work.name}>
+  <ShelfWork work={work} />
+</Base>

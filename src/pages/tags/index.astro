@@ -1,0 +1,40 @@
+---
+import Base from '../../layouts/Base.astro';
+import { allTags, getSite } from '../../lib/entries';
+
+const tags = allTags(await getSite());
+---
+
+<Base title="Tags">
+  {tags.length === 0 && <p class="empty">No tags yet.</p>}
+  <ul>
+    {
+      tags.map(([tag, count]) => (
+        <li>
+          <a href={`/tags/${tag}/`}>#{tag}</a>
+          <span class="count">{count}</span>
+        </li>
+      ))
+    }
+  </ul>
+</Base>
+
+<style>
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em 1.6em;
+    justify-content: center;
+  }
+  a:hover {
+    color: var(--accent);
+  }
+  .count {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-left: 0.3em;
+  }
+</style>

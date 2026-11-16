@@ -1,0 +1,110 @@
+---
+import type { Work } from '../lib/entries';
+import { formatShortDate } from '../lib/format';
+
+interface Props {
+  works: Work[];
+}
+
+const { works } = Astro.props;
+const kinds = [...new Set(works.map((w) => w.entry.data.kind))];
+---
+
+{works.length === 0 && <p class="empty">Nothing here yet.</p>}
+
+{
+  kinds.length > 1 && (
+    <div class="filter" role="group" aria-label="Filter by kind">
+      <button type="button" data-kind="" aria-pressed="true">
+        All
+      </button>
+      {kinds.map((k) => (
+        <button type="button" data-kind={k} aria-pressed="false">
+          {k}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+<ul class="works">
+  {
+    works.map((w) => {
+      const d = w.entry.data;
+      return (
+        <li data-kind={d.kind}>
+          <a href={w.url}>
+            <span class="title">{w.name}</span>
+            {d.creator && <span class="creator">{d.creator}</span>}
+          </a>
+          <span class="meta">
+            {d.kind} · {d.status}
+            {w.last && ` · ${formatShortDate(w.last)}`}
+            {w.notes.length > 1 && ` · ${w.notes.length} entries`}
+          </span>
+        </li>
+      );
+    })
+  }
+</ul>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filter button');
+  const items = document.querySelectorAll<HTMLLIElement>('.works li');
+  buttons.forEach((b) =>
+    b.addEventListener('click', () => {
+      const kind = b.dataset.kind;
+      buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      items.forEach((li) => (li.hidden = !!kind && li.dataset.kind !== kind));
+    }),
+  );
+</script>
+
+<style>
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5em;
+    margin-bottom: 1.75rem;
+  }
+  .filter button {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--muted);
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 0.15em 0.9em;
+    cursor: pointer;
+  }
+  .filter button[aria-pressed='true'] {
+    color: var(--paper);
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .works {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .works li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .works a:hover .title {
+    color: var(--accent);
+  }
+  .title {
+    font-weight: 600;
+  }
+  .creator {
+    margin-left: 0.6em;
+    font-size: 0.9rem;
+  }
+  .meta {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>

@@ -1,0 +1,101 @@
+---
+import Rendered from './Rendered.astro';
+import type { Work } from '../lib/entries';
+import { formatMonthDay, formatShortDate } from '../lib/format';
+import { shelves } from '../site.config';
+
+interface Props {
+  work: Work;
+}
+
+const { work } = Astro.props;
+const d = work.entry.data;
+const cfg = shelves[work.shelf];
+const hasIntro = (work.entry.body ?? '').trim().length > 0;
+
+function span(): string | undefined {
+  if (!work.first || !work.last) return undefined;
+  const from = formatShortDate(work.first);
+  if (work.first.valueOf() === work.last.valueOf()) return from;
+  return `${from} – ${formatShortDate(work.last)}`;
+}
+const period = span();
+---
+
+<article>
+  <header class="head">
+    <p class="meta">{d.kind} · {d.status}{period && ` · ${period}`}</p>
+    <h1>{work.name}</h1>
+    {d.creator && <p class="creator">{d.creator}</p>}
+  </header>
+
+  {hasIntro && <Rendered entry={work.entry} />}
+
+  {
+    work.notes.map((n) => (
+      <section class="note" id={`d-${n.key}`}>
+        <h2>{formatMonthDay(n.date)}</h2>
+        <Rendered entry={n.entry} />
+      </section>
+    ))
+  }
+
+  {
+    d.tags.length > 0 && (
+      <p class="tags">
+        {d.tags.map((t) => (
+          <a href={`/tags/${t}/`}>#{t}</a>
+        ))}
+      </p>
+    )
+  }
+</article>
+
+<p class="back"><a href={cfg.path}>← All {cfg.label.toLowerCase()}</a></p>
+
+<style>
+  .head {
+    margin-bottom: 2rem;
+  }
+  .meta {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  h1 {
+    font-size: 1.25rem;
+    margin: 0.25rem 0 0;
+  }
+  .creator {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+  .note {
+    padding-top: 1.25rem;
+    margin-top: 1.25rem;
+    border-top: 1px solid var(--rule);
+    scroll-margin-top: 1rem;
+  }
+  .note h2 {
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 400;
+    margin: 0 0 0.5rem;
+  }
+  .note:target h2 {
+    color: var(--accent);
+  }
+  .tags {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    display: flex;
+    gap: 1em;
+    flex-wrap: wrap;
+  }
+  .back {
+    margin-top: 3rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+</style>

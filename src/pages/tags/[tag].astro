@@ -1,0 +1,59 @@
+---
+import Base from '../../layouts/Base.astro';
+import Timeline from '../../components/Timeline.astro';
+import { allTags, getSite, type DiaryItem, type Work } from '../../lib/entries';
+
+export async function getStaticPaths() {
+  const site = await getSite();
+  return allTags(site).map(([tag]) => ({
+    params: { tag },
+    props: {
+      tag,
+      diary: site.diary.filter((d) => d.entry.data.tags.includes(tag)),
+      works: Object.values(site.shelves)
+        .flat()
+        .filter((w) => w.entry.data.tags.includes(tag)),
+    },
+  }));
+}
+
+interface Props {
+  tag: string;
+  diary: DiaryItem[];
+  works: Work[];
+}
+
+const { tag, diary, works } = Astro.props;
+---
+
+<Base title={`#${tag}`}>
+  <h1 class="page-title">#{tag}</h1>
+  {
+    works.length > 0 && (
+      <ul class="works">
+        {works.map((w) => (
+          <li>
+            <a href={w.url}>{w.name}</a>
+            <span class="muted">{w.entry.data.kind}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  {diary.length > 0 && <Timeline items={diary} />}
+</Base>
+
+<style>
+  .works {
+    list-style: none;
+    margin: 0 0 2rem;
+    padding: 0;
+  }
+  .works li {
+    padding: 0.3rem 0;
+  }
+  .works .muted {
+    font-size: 0.75rem;
+    margin-left: 0.5em;
+  }
+</style>

@@ -1,0 +1,29 @@
+---
+import type { Weather } from '../lib/entries';
+
+interface Props {
+  weather: Weather;
+}
+
+const { weather } = Astro.props;
+const text = [weather.word, weather.temp].filter(Boolean).join(', ');
+---
+
+{
+  text && (
+    <span class="weather">
+      {text}
+      {weather.tentative && <span class="tentative"> (forecast)</span>}
+    </span>
+  )
+}
+
+<style>
+  .weather {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .tentative {
+    font-size: 0.85em;
+  }
+</style>

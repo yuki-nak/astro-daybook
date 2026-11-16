@@ -1,0 +1,12 @@
+---
+import Base from '../../layouts/Base.astro';
+import ShelfIndex from '../../components/ShelfIndex.astro';
+import { getSite } from '../../lib/entries';
+import { shelves } from '../../site.config';
+
+const site = await getSite();
+---
+
+<Base title={shelves.works.label}>
+  <ShelfIndex works={site.shelves.works} />
+</Base>
